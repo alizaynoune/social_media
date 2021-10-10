@@ -78,3 +78,16 @@ export const updateConversation = async (req, res, next) => {
     res.send('update conversation');
 }
 
+export const getConversationById = async (req, res, next) => {
+    try {
+        console.log(req.params.id);
+        const conversation = await Conversation.findOne({_id: req.params.id, members: { $in: [res.locals.user.id] } });
+        if (!conversation)
+            return next(new ErrorResponse(ERROR_CODE.CONVERSATION_NOT_FOUND));
+        const ret = conversation.toJSON();
+        return SuccessHandler(res, ret, SUCCESS_CODE.CONVERSATION_FOUND);
+    } catch (error) {
+        return next(error);
+    }
+};
+

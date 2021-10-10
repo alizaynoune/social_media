@@ -36,7 +36,7 @@ export const getMessages = async (req, res, next) => {
 
 
     try {
-        let UserInConv = await Conversation.find({ _id: req.params.id, members: { $in: [res.locals.user.id] } });
+        let UserInConv = await Conversation.findOne({ _id: req.params.id, members: { $in: [res.locals.user.id] } });
         if (!UserInConv)
             return next(new ErrorResponse(ERROR_CODE.CONVERSATION_NOT_FOUND));
         let messages = await Message.find(select).and({conversation : req.params.id}).sort(sort).skip(skip).limit(limit);

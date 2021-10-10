@@ -14,10 +14,8 @@ router.route('/')
     .post(validatorMethod('create_conversation'), access.grandAccess('createOwn', 'conversation') ,conversationController.createConversation)
     .delete(access.grandAccess('deleteOwn', 'conversation') ,conversationController.deleteConversation);
 
-router.route('/:conversationId')
-    .get((req, res) => {
-        res.send('get conversation');
-    })
+router.route('/:id')
+    .get(access.grandAccess('readOwn', 'conversation') ,conversationController.getConversationById)
     .put((req, res) => {
         res.send('update conversation');
     })
