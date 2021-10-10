@@ -26,11 +26,11 @@ export const roles = (() => {
         // ])
 
 
-        .readAny('role', ['user', 'admin', 'superAdmin'])
+        .readAny('role', ['*', 'user', 'admin', '!superAdmin'])
         .createAny('role', ['user', 'admin', 'superAdmin'])
         .updateAny('role', ['user', 'admin', 'superAdmin'])
         .deleteAny('role', ['user', 'admin', 'superAdmin'])
-        .readAny('queryWhere', ['createAt', 'role', 'gander', 'age'])
+        .readAny('queryWhere', ['*'])// ['createAt', 'role', 'gander', 'age'])
         
         .readOwn('blocked', ['userId', 'blockedUserId'])
         .readAny('blocked', ['userId', 'blockedUserId'])
@@ -87,6 +87,7 @@ export const roles = (() => {
 
 
 
+    ac.lock();
 
     return ac;
 })();

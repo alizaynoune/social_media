@@ -97,47 +97,69 @@ export const getUsers = async (req, res, next) => {
         return next(new ErrorResponse(ERROR_CODE.VALIDATION_ERROR, errors.array()));
     }
 
+    // init regex for search and replace '*' to '.*' and '.' to '\\.'
     const regexSearch = new RegExp(req.query.search?.replace(/\./g, '\\.').replace(/\*/g, '.*'), 'ig');
-    // console.log(regexSearch, 'regexSearch');
+    // match sortBy with regex
     const sort = req.query.sortBy?.match(/(\-?createdAt)|(\-?firstName)|(\-?email)|(\-?role)|(\-?birthday)|(\-?lastName)/g)?.[0] || '-createdAt';
-    // console.log(req.query.sortBy?.match(/\-?createdAt|\-?firstName|\-?email|\-?role|\-?birthday|\-?lastName/g), 'sort');
+    // number of page for pagination
     const page = parseInt(req.query.page) || 1;
+    // size of page for pagination
     const limit = parseInt(req.query.limit) || 10;
+    // number skip for pagination
     const skip = (page - 1) * limit;
-    const roleCanRead = roles.can(res.locals.user.role).readAny('role').attributes || ['user'];
-    const regexRole = new RegExp(roleCanRead.join('|') || 'user', 'ig');
 
-    const matchSelector = req.query.selector?.match(/((firstName)|(lastName)|(email))/g) || ['firstName', 'lastName', 'email'];
-    const selector = matchSelector.map(item => ({ [item.trim()]: regexSearch }));
-    console.log(selector, 'selector');
+    // filter query fields
+    const selector = (req.query.selector?.match(/((firstName)|(lastName)|(email))/g) || ['firstName', 'lastName', 'email'])
+        .map(selector => ({ [selector]: regexSearch }));
+    // console.log(selector, 'selector');
 
-    const wherePermission = roles.can(res.locals.user.role).readAny('queryWhere').attributes || [];
-    const where = req.query.where?.match(/(\w*\[[^\]]*\])/g).filter(item => wherePermission.includes(item.match(/^([^\[]+)/g)[0]) ? item : null);
-    console.log(where, 'where');
-    console.log(wherePermission, 'wherePermission');
-
-    const role = where?.find(item => /role\[/.test(item))?.match(regexRole)?.filter(item => roleCanRead.includes(item)) || roleCanRead;
-    console.log(role, 'role');
-    const gander = where?.find(item => /gander\[/.test(item))?.match(/m|f/ig) || ['m', 'f'];
-    // console.log(gander, 'gander');
-    const currentTime = new Date();
-    const age = where?.find(item => /age\[/.test(item))?.match(/\d+/g) || [18, 100];
-    
-    const ageRange = age[1] ? { $gte: currentTime.getFullYear() - parseInt(age[1]), $lte: currentTime.getFullYear() - parseInt(age[0]) } : { $eq: currentTime.getFullYear() - parseInt(age[0]) };
-    console.log(ageRange, 'ageRange');
-    
-    const is_deleted = where?.find(item => /is_deleted\[/.test(item))?.match(/true|false/ig)?.[0] === 'true';
-    console.log(is_deleted, 'is_deleted');
-    
-    const is_active = where?.find(item => /is_active\[/.test(item))?.match(/true|false/ig)?.[0] === 'false' ? false : true;
-    console.log(is_active, 'is_active');
-    
-    const createdAt = where?.find(item => /createdAt\[/.test(item))?.match(/\d{4}-?\/?\d{0,2}-?\/?\d{0,2}/g) || [currentTime.toISOString()];
-    console.log(createdAt, 'createdAt');
-
-    // console.log(req.query, 'req.query');
-
-
+    // const testWhere = req.query.where?.match(/(\w*\[[^\]]*\])/g) || [];
+    // init where for query
+    let where = new Object();
+    // split where by query[value]
+    req.query.where?.match(/(\w*\[[^\]]*\])/g)?.forEach(item => {
+        where[item.match(/^([^\[]+)/g)[0].trim()] = item.match(/(?<=\[)(.*?)(?=\])/g)[0].trim();
+    }) || {};
+    // filter where by role permission attribute
+    where = roles.can(res.locals.user.role).readAny('queryWhere')?.filter(where);
+    // init role will be selecting
+    let WhereRole = new Object();
+    // split where role and return role as object {role: $in [roles after filtering]}
+    where.role?.split(/\s*,{1}\s*/)?.forEach(item => item.match(/w*/) ? WhereRole[item] = item : null) || {};
+    where.role = {
+        $in: Object.values(
+            roles.can(res.locals.user.role).readAny('role')?.filter(
+                Object.keys(WhereRole).length === 0 ? { user: 'user', admin: 'admin', superAdmin: 'superAdmin' } : WhereRole
+            ))
+    };
+    where.is_deleted = where.deleted?.match(/true|false/g)?.[0] === 'true';
+    delete where.deleted;
+    where.email_active = where.activated?.match(/true|false/g)?.[0] === 'false' ? false : true;
+    // where.email_active = false;
+    if (where.age) {
+        let currentTime = new Date();
+        let age = where.age.split(',').map(item => parseInt(item));
+        where.birthday = age[1] && age[0] !== age[1] ? {
+            $lte: new Date(currentTime.getFullYear() - ((age[0] < age[1]) ? age[0] : age[1]), currentTime.getMonth(), currentTime.getDate()),
+            $gte: new Date(currentTime.getFullYear() - ((age[0] < age[1]) ? age[1] : age[0]), currentTime.getMonth(), currentTime.getDate()),
+        } : {
+            $lte: new Date(currentTime.getFullYear() - age[0], currentTime.getMonth(), currentTime.getDate()),
+            $gte: new Date(currentTime.getFullYear() - (age[0] + 1), currentTime.getMonth(), currentTime.getDate()),
+        };
+        delete where.age;
+    }
+    if (where.createdAt) {
+        where.createdAt = where.createdAt.split(/\s*,{1}\s*/).map(item => Date.parse(item));
+        where.createdAt = where.createdAt[1] && where.createdAt[0] !== where.createdAt[1] ? {
+            $lte: new Date((where.createdAt[0] < where.createdAt[1] ? where.createdAt[1] : where.createdAt[0])),
+            $gte: new Date((where.createdAt[0] < where.createdAt[1] ? where.createdAt[0] : where.createdAt[1])),
+        } : {
+            $eq: new Date(where.createdAt[0])
+        };
+    }
+    where.gander ? where.gander = where.gander.match(/m|f/gi)?.[0].toLowerCase() : 0;
+    where.granted ? 0 : delete where.gander;
+    console.log(where, 'testWhere');
 
     try {
         // get list of users blocked by current user or they blocked current user
@@ -147,15 +169,14 @@ export const getUsers = async (req, res, next) => {
             (item.userId === res.locals.user.id) ? item.blockedUserId.toString() : item.userId.toString());
         // don't forget to filter users don't activeted and is deleted
         // get list of users
-        const users = await User.find({ _id: { $nin: listBlockedUserId, $nin: res.locals.user.id }, role: { $in: role } })
-            .or(selector)
-            .sort(sort).skip(skip).limit(limit);
+        const users = await User.find({ _id: { $nin: listBlockedUserId, $nin: res.locals.user.id } })
+            .or(selector).and(where).sort(sort).skip(skip).limit(limit);
         if (!users) return next(new ErrorResponse(ERROR_CODE.USER_NOT_FOUND));
         // list of users to json
         const usersJson = users.map(user => user.toJSON());
         // get total count of users
         const total = await User.count({ _id: { $nin: listBlockedUserId, $nin: res.locals.user.id } })
-            .or(selector);
+            .or(selector).and(where);
         // return list of users
         return SuccessHandler(res, usersJson, SUCCESS_CODE.SUCCESS, { total, size: users.length });
     } catch (error) {
