@@ -32,6 +32,10 @@ export const roles = (() => {
         .deleteAny('role', ['user', 'admin', 'superAdmin'])
         .readAny('queryWhere', ['*'])// ['createAt', 'role', 'gander', 'age'])
         
+
+        .readOwn('messages',  ['*'])
+
+
         .readOwn('blocked', ['userId', 'blockedUserId'])
         .readAny('blocked', ['userId', 'blockedUserId'])
         .createOwn('blocked', ['userId', 'blockedUserId'])

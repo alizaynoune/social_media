@@ -102,9 +102,9 @@ export const getUsers = async (req, res, next) => {
     // match sortBy with regex
     const sort = req.query.sortBy?.match(/(\-?createdAt)|(\-?firstName)|(\-?email)|(\-?role)|(\-?birthday)|(\-?lastName)/g)?.[0] || '-createdAt';
     // number of page for pagination
-    const page = parseInt(req.query.page) || 1;
+    const page = Math.abs(parseInt(req.query.page)) || 1;
     // size of page for pagination
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = Math.abs(parseInt(req.query.limit)) || 10;
     // number skip for pagination
     const skip = (page - 1) * limit;
 

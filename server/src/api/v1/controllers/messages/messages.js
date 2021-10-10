@@ -12,6 +12,7 @@ import { roles } from '../../config/roles.js';
 import Conversation from "../../models/conversation.js";
 import blocked from "../../models/blocked.js";
 import User from "../../models/User.js";
+import message from '../../models/message.js';
 
 
 export const getMessages = async (req, res, next) => {
@@ -20,9 +21,9 @@ export const getMessages = async (req, res, next) => {
     if (!errors.isEmpty()) return next(new ErrorResponse(ERROR_CODE.VALIDATION_ERROR, errors.array()));
     const sort = req.query.sortBy?.match(/\-?createdAt/g)?.[0] || '-createdAt';
     // number of page for pagination
-    const page = parseInt(req.query.page) || 1;
+    const page = Math.abs(parseInt(req.query.page)) || 1;
     // size of page for pagination
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = Math.abs(parseInt(req.query.limit)) || 10;
     // number skip for pagination
     const skip = (page - 1) * limit;
 
@@ -41,8 +42,13 @@ export const getMessages = async (req, res, next) => {
             return next(new ErrorResponse(ERROR_CODE.CONVERSATION_NOT_FOUND));
         let messages = await Message.find(select).and({conversation : req.params.id}).sort(sort).skip(skip).limit(limit);
         let messagesToJson = messages.map(message => message.toJSON());
-
-        res.json({ messagesToJson });
+        let messagesCount = await Message.countDocuments(select);
+        // let size = Math.ceil(messagesCount / limit);
+        // const total = await User.count({ _id: { $nin: listBlockedUserId, $nin: res.locals.user.id } })
+        // .or(selector).and(where);
+    // return list of users
+    return SuccessHandler(res, messagesToJson, SUCCESS_CODE.SUCCESS, { messagesCount, size: messages.length });
+        // res.json({ messagesToJson });
     } catch (error) {
         return next(error);
     }
