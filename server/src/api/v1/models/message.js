@@ -25,6 +25,8 @@ const MessageSchema = new mongoose.Schema({
 MessageSchema.options.toJSON = {
     transform(doc, ret) {
         ret.id = ret._id.toString();
+        ret.sender = ret.sender.toString();
+        ret.conversation = ret.conversation.toString();
         delete ret._id;
         delete ret.__v;
     },

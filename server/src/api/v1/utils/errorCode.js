@@ -115,6 +115,13 @@ export const ERROR_CODE = {
     YOU_DONT_HAVE_ENOUGH_PERMISSION: { name: 'you dont have enough permission', code: 159, statusCode: 400 },
     SELECTOR_INVALID: { name: 'selector invalid', code: 160, statusCode: 400 },
 
+    MESSAGE_NOT_FOUND: { name: 'message not found', code: 161, statusCode: 400 },
+    MESSAGE_NOT_FOUND_WITH_ID: { name: 'message not found with id', code: 162, statusCode: 400 },
+    MESSAGE_NOT_CREATED: { name: 'message not created', code: 163, statusCode: 400 },
+    MESSAGE_NOT_UPDATED: { name: 'message not updated', code: 164, statusCode: 400 },
+    MESSAGE_NOT_DELETED: { name: 'message not deleted', code: 165, statusCode: 400 },
+    MESSAGE_CAN_NOT_BE_DELETED: { name: 'message can not be deleted', code: 166, statusCode: 400 },
+
 };
 
 

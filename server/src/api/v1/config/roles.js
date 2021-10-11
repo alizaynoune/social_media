@@ -34,6 +34,8 @@ export const roles = (() => {
         
 
         .readOwn('messages',  ['*'])
+        .createOwn('messages', ['*'])
+        .deleteOwn('messages')
 
 
         .readOwn('blocked', ['userId', 'blockedUserId'])

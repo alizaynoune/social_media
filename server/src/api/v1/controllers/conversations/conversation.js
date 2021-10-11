@@ -48,7 +48,7 @@ export const createConversation = async (req, res, next) => {
         if (user.length !== members.length) {
             return next(new ErrorResponse(ERROR_CODE.YOU_CAN_NOT_CREATE_CONVERSATION_WITH_NOT_EXISTING_USERS));
         }
-        // check if user is blocked
+        // check if users is blocked each other
         const blockedMembers = await blocked.find({ $and: [{ $or: blockedUserId }, { $or: userId }] });
         if (blockedMembers.length > 0) {
             return next(new ErrorResponse(ERROR_CODE.YOU_CAN_NOT_CREATE_CONVERSATION_WITH_BLOCKED_USERS));
