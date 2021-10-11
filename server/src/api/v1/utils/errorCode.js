@@ -128,6 +128,7 @@ export const ERROR_CODE = {
     MESSAGE_IS_TOO_SHORT: { name: 'message is too short', code: 170, statusCode: 400 },
     MESSAGE_INVALID_LENGTH: { name: 'message invalid length min 3, max 255', code: 171, statusCode: 400 },
 
+    CONVERSATION_NOT_CREATED: { name: 'conversation not created', code: 172, statusCode: 400 },
 
 };
 

@@ -93,3 +93,89 @@ export const deleteMessage = async (req, res, next) => {
     }
 };
 
+export const createSendMessage = async (req, res, next) => {
+    // validation body fields
+    const errors = validationResult(req).formatWith(errorFormatter);
+    if (!errors.isEmpty()) return next(new ErrorResponse(ERROR_CODE.VALIDATION_ERROR, errors.array()));
+    try {
+        // push current user to members
+        req.body.members.push(res.locals.user.id.toString());
+        // uniqe check
+        const members = [...new Set(req.body.members)];
+        // create userIds object for find if user is blocked
+        const userId = members.map((member) => {
+            return ({ userId: member })
+        });
+        // create blockedUserId object for find if user is blocked
+        const blockedUserId = members.map((member) => {
+            return ({ blockedUserId: member })
+        });
+        const user = await User.find({ _id: { $in: members } }).exec();
+        console.log(user.length, user);
+        if (user.length !== members.length) {
+            return next(new ErrorResponse(ERROR_CODE.YOU_CAN_NOT_CREATE_CONVERSATION_WITH_NOT_EXISTING_USERS));
+        }
+        // check if users is blocked each other
+        const blockedMembers = await blocked.find({ $and: [{ $or: blockedUserId }, { $or: userId }] });
+        if (blockedMembers.length > 0) {
+            return next(new ErrorResponse(ERROR_CODE.YOU_CAN_NOT_CREATE_CONVERSATION_WITH_BLOCKED_USERS));
+        }
+        const conversation = await Conversation.create({ userId: res.locals.user.id, members: members });
+        if (!conversation) {
+            return next(new ErrorResponse(ERROR_CODE.CONVERSATION_NOT_CREATED));
+        }
+        let message = await Message.create({ text: req.body.text, sender: res.locals.user.id, conversation: conversation._id });
+        if (!message)
+            return next(new ErrorResponse(ERROR_CODE.MESSAGE_NOT_CREATED));
+        return SuccessHandler(res, message.toJSON(), SUCCESS_CODE.SUCCESS);
+    } catch (error) {
+        return next(error);
+    }
+};
+
+
+export const getAllMessages = async (req, res, next) => {
+    // validation body fields
+    const errors = validationResult(req).formatWith(errorFormatter);
+    if (!errors.isEmpty()) return next(new ErrorResponse(ERROR_CODE.VALIDATION_ERROR, errors.array()));
+    try {
+        // let messages = await Message.find({ conversation: req.params.id });
+        // if (!messages)
+        //     return next(new ErrorResponse(ERROR_CODE.MESSAGE_NOT_FOUND));
+        // return SuccessHandler(res, messages.toJSON(), SUCCESS_CODE.SUCCESS);
+        let Conversations = await Conversation.find({ members: { $in: [res.locals.user.id] } });
+        if (!Conversations)
+            return next(new ErrorResponse(ERROR_CODE.CONVERSATION_NOT_FOUND));
+        // let messages = await Message.find({ conversation: { $in: Conversations.map(conversation => conversation._id) } }).group({ _id: '$conversation', messages: { $push: '$$ROOT' } });
+        let messages = await Message.aggregate([
+            { $match: { conversation: { $in: Conversations.map(conversation => conversation._id) } } },
+            {
+                $group: {
+                    _id: '$conversation',
+                    messages: { $push: '$$ROOT' }
+                }
+            },
+            {
+                $sort: {
+                    'messages.createdAt': -1
+                }
+            },
+        ]);
+
+        if (!messages)
+            return next(new ErrorResponse(ERROR_CODE.MESSAGE_NOT_FOUND));
+        // const messagesToJson = messages.map(message => message.toJSON());
+        messages = messages.map(message => {
+            message.id = message._id.toString();
+            delete message._id;
+            message.messages = message.messages.map(message => { message.id = message._id; delete message._id; delete message.__v; return message; });
+            // console.log(message.messages, 'message.messages');
+            return message;
+        });
+        return SuccessHandler(res, messages, SUCCESS_CODE.SUCCESS);
+    } catch (error) {
+        return next(error);
+    }
+};
+
+

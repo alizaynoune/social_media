@@ -59,6 +59,9 @@ export const createConversation = async (req, res, next) => {
         //     return next(new ErrorResponse(ERROR_CODE.CONVERSATION_ALREADY_EXISTS));
         // }
         const conversation = await Conversation.create({ userId: res.locals.user.id, members: members });
+        if (!conversation) {
+            return next(new ErrorResponse(ERROR_CODE.CONVERSATION_NOT_CREATED));
+        }
         const ret = conversation.toJSON();
         res.locals.userPermission = roles.can(res.locals.user.role)['readOwn']('conversation');
         return SuccessHandler(res, ret, SUCCESS_CODE.CONVERSATION_CREATED);
@@ -90,4 +93,5 @@ export const getConversationById = async (req, res, next) => {
         return next(error);
     }
 };
+
 

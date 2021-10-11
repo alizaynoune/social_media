@@ -17,7 +17,10 @@ export const method = (method) => {
             return userValidator.query;
         case 'create_conversation':
             return validateConversation.create;
-        
+
+        case 'create_send_message':
+            return validateMessage.createAndSend;
+
         case 'create_message':
             return validateMessage.create;
         default:

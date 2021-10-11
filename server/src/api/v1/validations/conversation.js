@@ -8,6 +8,7 @@ export const validateConversation = {
             return value.every(member => { return member.match(/^[0-9a-fA-F]{24}$/); });
         }).withMessage(ERROR_CODE.CONVERSATION_MEMBER_INVALID),
     ],
+
 };
 
 
