@@ -122,6 +122,13 @@ export const ERROR_CODE = {
     MESSAGE_NOT_DELETED: { name: 'message not deleted', code: 165, statusCode: 400 },
     MESSAGE_CAN_NOT_BE_DELETED: { name: 'message can not be deleted', code: 166, statusCode: 400 },
 
+    MESSAGE_IS_REQUIRED: { name: 'message is required', code: 167, statusCode: 400 },
+    MESSAGE_IS_INVALID: { name: 'message is invalid', code: 168, statusCode: 400 },
+    MESSAGE_IS_TOO_LONG: { name: 'message is too long', code: 169, statusCode: 400 },
+    MESSAGE_IS_TOO_SHORT: { name: 'message is too short', code: 170, statusCode: 400 },
+    MESSAGE_INVALID_LENGTH: { name: 'message invalid length min 3, max 255', code: 171, statusCode: 400 },
+
+
 };
 
 

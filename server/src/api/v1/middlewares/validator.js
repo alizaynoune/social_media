@@ -1,5 +1,6 @@
 import { userValidator } from '../validations/user.js';
 import { validateConversation } from '../validations/conversation.js';
+import { validateMessage } from '../validations/message.js';
 
 
 export const method = (method) => {
@@ -16,6 +17,9 @@ export const method = (method) => {
             return userValidator.query;
         case 'create_conversation':
             return validateConversation.create;
+        
+        case 'create_message':
+            return validateMessage.create;
         default:
             return [];
     }
