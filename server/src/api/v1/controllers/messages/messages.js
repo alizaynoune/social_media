@@ -1,6 +1,6 @@
 import Message from '../../models/message.js';
 
-import { body, validationResult } from 'express-validator';
+import { validationResult } from 'express-validator';
 import { errorFormatter } from "../../config/express-validator-Formatter.js";
 import ErrorResponse from '../../utils/errorResponse.js';
 import { ERROR_CODE } from '../../utils/errorCode.js';
@@ -12,7 +12,6 @@ import { roles } from '../../config/roles.js';
 import Conversation from "../../models/conversation.js";
 import blocked from "../../models/blocked.js";
 import User from "../../models/User.js";
-import message from '../../models/message.js';
 
 
 export const getMessages = async (req, res, next) => {
@@ -41,8 +40,10 @@ export const getMessages = async (req, res, next) => {
         if (!UserInConv)
             return next(new ErrorResponse(ERROR_CODE.CONVERSATION_NOT_FOUND));
         let messages = await Message.find(select).and({ conversation: req.params.id }).sort(sort).skip(skip).limit(limit);
+        if (!messages)
+            return next(new ErrorResponse(ERROR_CODE.NO_MESSAGE_FOUND));
         let messagesToJson = messages.map(message => message.toJSON());
-        let messagesCount = await Message.countDocuments(select);
+        let messagesCount = await Message.countDocuments(select).and({ conversation: req.params.id });
         return SuccessHandler(res, messagesToJson, SUCCESS_CODE.SUCCESS, { messagesCount, size: messages.length });
     } catch (error) {
         return next(error);
@@ -61,16 +62,12 @@ export const sendMessage = async (req, res, next) => {
         if (!message)
             return next(new ErrorResponse(ERROR_CODE.MESSAGE_NOT_CREATED));
         return SuccessHandler(res, message.toJSON(), SUCCESS_CODE.SUCCESS);
-
-
-        // res.json({ message });
     } catch (error) {
         return next(error);
     }
 };
 
 export const deleteMessage = async (req, res, next) => {
-    // return res.send('deleteMessage');
     // validation body fields
     const errors = validationResult(req).formatWith(errorFormatter);
     if (!errors.isEmpty()) return next(new ErrorResponse(ERROR_CODE.VALIDATION_ERROR, errors.array()));
@@ -138,38 +135,42 @@ export const getAllMessages = async (req, res, next) => {
     // validation body fields
     const errors = validationResult(req).formatWith(errorFormatter);
     if (!errors.isEmpty()) return next(new ErrorResponse(ERROR_CODE.VALIDATION_ERROR, errors.array()));
+    const sort = req.query.sortBy?.match(/\-?createdAt/g)?.[0] || '-createdAt';
+    // number of page for pagination
+    const page = Math.abs(parseInt(req.query.page)) || 1;
+    // size of page for pagination
+    const limit = Math.abs(parseInt(req.query.limit)) || 10;
+    // number skip for pagination
+    const skip = (page - 1) * limit;
     try {
-        // let messages = await Message.find({ conversation: req.params.id });
-        // if (!messages)
-        //     return next(new ErrorResponse(ERROR_CODE.MESSAGE_NOT_FOUND));
-        // return SuccessHandler(res, messages.toJSON(), SUCCESS_CODE.SUCCESS);
         let Conversations = await Conversation.find({ members: { $in: [res.locals.user.id] } });
         if (!Conversations)
             return next(new ErrorResponse(ERROR_CODE.CONVERSATION_NOT_FOUND));
-        // let messages = await Message.find({ conversation: { $in: Conversations.map(conversation => conversation._id) } }).group({ _id: '$conversation', messages: { $push: '$$ROOT' } });
         let messages = await Message.aggregate([
             { $match: { conversation: { $in: Conversations.map(conversation => conversation._id) } } },
             {
                 $group: {
                     _id: '$conversation',
-                    messages: { $push: '$$ROOT' }
+                    // messages: { $last: '$$ROOT' }
+                    message_id: { $last: '$_id' },
+                    text: { $last: '$text' },
+                    sender: { $last: '$sender' },
+                    createdAt: { $last: '$createdAt' },
+                    status: { $last: '$status' },
+                    conversation: { $last: '$conversation' },
+                    createdAt: { $last: '$createdAt' },
                 }
-            },
-            {
-                $sort: {
-                    'messages.createdAt': -1
-                }
-            },
-        ]);
+            }
+        ]).sort(sort).skip(skip).limit(limit);
 
         if (!messages)
-            return next(new ErrorResponse(ERROR_CODE.MESSAGE_NOT_FOUND));
-        // const messagesToJson = messages.map(message => message.toJSON());
+            return next(new ErrorResponse(ERROR_CODE.NO_MESSAGE_FOUND));
         messages = messages.map(message => {
-            message.id = message._id.toString();
+            message.id = message.message_id.toString();
+            message.sender = message.sender.toString();
+            message.conversation = message.conversation.toString();
             delete message._id;
-            message.messages = message.messages.map(message => { message.id = message._id; delete message._id; delete message.__v; return message; });
-            // console.log(message.messages, 'message.messages');
+            delete message.message_id;
             return message;
         });
         return SuccessHandler(res, messages, SUCCESS_CODE.SUCCESS);

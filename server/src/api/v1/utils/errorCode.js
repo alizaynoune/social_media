@@ -130,6 +130,8 @@ export const ERROR_CODE = {
 
     CONVERSATION_NOT_CREATED: { name: 'conversation not created', code: 172, statusCode: 400 },
 
+    NO_MESSAGE_FOUND: { name: 'no message found', code: 173, statusCode: 400 },
+
 };
 
 

@@ -20,6 +20,15 @@ const MessageSchema = new mongoose.Schema({
         enum: ['sent', 'delivered', 'read'],
         default: 'sent',
     },
+    readBy: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    }],
+    deliveredBy: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    }],
+
 }, { timestamps: true });
 
 MessageSchema.options.toJSON = {

@@ -1,5 +1,6 @@
 import express from 'express';
 import * as messages from '../controllers/messages/messages.js';
+import * as messageStatus from '../controllers/messages/status.js';
 import * as access from '../middlewares/accessMiddleware.js';
 import { method as validatorMethod } from '../middlewares/validator.js';
 
@@ -21,6 +22,8 @@ router.route('/:id(\[0-9a-f\]{24})')
     .post(validatorMethod('create_message'), access.grandAccess('createOwn', 'messages'), messages.sendMessage)
     .delete(access.grandAccess('deleteOwn', 'messages'), messages.deleteMessage);
 
+router.put('/:messageId(\[0-9a-f\]{24})/read', access.grandAccess('readOwn', 'messages'), messageStatus.readMessage);
 
+router.put('/:messageId(\[0-9a-f\]{24})/delivered', access.grandAccess('readOwn', 'messages'), messageStatus.deliveredMessage);
 
 export default router;
