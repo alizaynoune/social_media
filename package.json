@@ -1,0 +1,12 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "server": "npm run start --prefix server/",
+    "client": "npm start --prefix client/"
+  },
+  "author": "",
+  "license": "MIT"
+}

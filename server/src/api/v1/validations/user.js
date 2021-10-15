@@ -39,8 +39,8 @@ export const userValidator = {
     login: [
         body('email').notEmpty().withMessage(ERROR_CODE.EMAIL_REQUIRED).trim()
             .isEmail().withMessage(ERROR_CODE.EMAIL_INVALID),
-        body('password').notEmpty().withMessage(ERROR_CODE.PASSWORD_REQUIRED)
-            .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/).withMessage(ERROR_CODE.PASSWORD_INVALID),
+        // body('password').notEmpty().withMessage(ERROR_CODE.PASSWORD_REQUIRED)
+        //     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/).withMessage(ERROR_CODE.PASSWORD_INVALID),
     ],
 
     query: [

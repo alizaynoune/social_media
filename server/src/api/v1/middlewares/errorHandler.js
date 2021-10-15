@@ -60,7 +60,7 @@ const errorHandler = (err, req, res, next) => {
         success: false,
         message: error?.name || 'Server Error',
         code: error?.code || 500,
-        errors: error?.errors || {},
+        errors: error?.errors || null,
         // err : err?.name,
 
     });

@@ -8,7 +8,7 @@ class ErrorResponse extends Error {
         this.name = info?.name || 'Something went wrong';
         this.code = info?.code || 'UNKNOWN_ERROR';
         this.statusCode = info?.statusCode || 500;
-        this.errors = errors || {};
+        this.errors = errors || null;
         Error.captureStackTrace(this, this.constructor);
     }
 }
