@@ -30,6 +30,20 @@ export const register = (request) => {
     }
 }
 
+export const forgotPassword = (request) => {
+    return async (dispatch) => {
+        dispatch({ type: AUTH_LODING })
+        try {
+            const res = await apiLongin(request)
+            console.log(res.data, 'res data');
+            dispatch(success(res.data))
+        } catch (error) {
+            console.log(error?.response?.data || error);
+            dispatch(fail(error?.response?.data || error))
+        }
+    }
+}
+
 export const logout = () => {
     localStorage.removeItem('token');
     return {

@@ -5,6 +5,8 @@ import { connect } from 'react-redux';
 import { register } from '../../actions';
 import { Formik } from 'formik';
 
+import './login.css'
+
 
 function RegesterPage(props) {
     const [values, setValues] = useState({

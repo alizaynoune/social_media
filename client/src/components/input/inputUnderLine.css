@@ -1,0 +1,46 @@
+.input-underline {
+    position: relative;
+    display: block;
+    width: 99%;
+    border-radius: 0;
+    border-width: 0 0 3px;
+    border-bottom: #00bcd4 solid;
+    margin-top: 0.5rem;
+    margin: auto;
+    /* box-shadow: 0 5px 2px -1px  #00bcd4; */
+    outline: none;
+    
+}
+
+.focused {
+    border-width: 0 0 2px;
+    border-bottom: #00bcd4 solid;
+    box-shadow: 0 5px 2px -1px #00bcd4;
+    border-color: #00bcd4;
+
+    /* border-bottom: 1px solid #00bcd4; */
+    /* background-color: red; */
+}
+
+.input-underline:Blur {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.error {
+    color: red;
+    /* font-size: 0.8rem; */
+    /* margin-top: 0.5rem; */
+    /* margin-bottom: 0.5rem; */
+    box-shadow: 0 5px 2px -1px red;
+    border-color: red;
+}
+
+.valid {
+    color: green;
+    /* font-size: 0.8rem; */
+    /* margin-top: 0.5rem; */
+    /* margin-bottom: 0.5rem; */
+    box-shadow: 0 5px 2px -1px green;
+    border-color: green;
+}
+
