@@ -5,20 +5,23 @@ import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
 // import Register from './pages/auth/Register';
 // import Home from './pages/Home';
 
-import {Login, Register, Home, ForgotPassword} from './pages';
+import {Login, Register, Home, ForgotPassword, ProtectRoute} from './pages';
+import store from './store';
+import {isAuth} from './actions/authAction'
 
- 
+store.dispatch(isAuth());
+
 class App extends Component {
   render() { 
     return (
       <div className="App">
         <Router>
           <Switch>
-            <Route exact path="/" component={Home} />
+            <ProtectRoute exact path="/" component={Home} />
+          </Switch>
             <Route exact path="/login" component={Login} />
             <Route exact path="/register" component={Register} />
             <Route exact path="/forgot-password" component={ForgotPassword} />
-          </Switch>
         </Router>
       </div>
     );
