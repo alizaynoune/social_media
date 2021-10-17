@@ -1,5 +1,5 @@
 import { AUTH_FAIL, AUTH_SUCCESS, AUTH_LODING, AUTH_USER } from './types'
-import { apiLongin } from '../api';
+import { apiLongin, apiRegister } from '../api';
 
 export const singIn = (request) => {
     console.log(request);
@@ -7,6 +7,20 @@ export const singIn = (request) => {
         dispatch({ type: AUTH_LODING })
         try {
             const res = await apiLongin(request)
+            console.log(res.data, 'res data');
+            dispatch(success(res.data))
+        } catch (error) {
+            console.log(error?.response?.data || error);
+            dispatch(fail(error?.response?.data || error))
+        }
+    }
+}
+
+export const register = (request) => {
+    return async (dispatch) => {
+        dispatch({ type: AUTH_LODING })
+        try {
+            const res = await apiRegister(request)
             console.log(res.data, 'res data');
             dispatch(success(res.data))
         } catch (error) {
