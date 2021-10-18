@@ -9,3 +9,7 @@ export const apiLongin = (data) => {
 export const apiRegister = (data) => {
     return axios.post(URL + '/register', data);
 }
+
+export const apiforgotPassword = (data) => {
+    return axios.post(URL + '/forgot-password', data);
+}

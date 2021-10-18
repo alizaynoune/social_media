@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "server": "npm run start --prefix server/",
-    "client": "npm start --prefix client/"
+    "client": "npm start --prefix client/",
+    "build" : "npm run build --prefix client/"
   },
   "author": "",
   "license": "MIT"

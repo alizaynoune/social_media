@@ -1,14 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Form, Container, Card, FloatingLabel, Alert } from 'react-bootstrap'
-import { Route, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { Form, Input, Button, Checkbox, Typography, Select, DatePicker } from 'antd';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { Container, Card, Alert, Col } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { register } from '../../actions';
-import { Formik } from 'formik';
+import 'antd/dist/antd.css';
 
-import './login.css'
+const { Option } = Select;
 
 
-function RegesterPage(props) {
+function RegisterPage(props) {
+    const countries = [
+        {
+            value: 'AF',
+            label: 'Afghanistan',
+        },
+        {
+            value: 'AX',
+            label: 'Åland Islands',
+        },
+        {
+            value: 'AL',
+            label: 'Albania',
+        },
+        {
+            value: 'DZ',
+            label: 'Algeria',
+        },
+        {
+            value: 'AS',
+            label: 'American Samoa',
+        },
+        {
+            value: 'AD',
+            label: 'Andorra',
+        },
+        {
+            value: 'MA',
+            label: 'Morocco',
+        },
+    ];
+    const [errors, setErrors] = useState({
+        email: ' ',
+        password: ' ',
+        confirmPassword: ' ',
+        firstName: ' ',
+        lastName: ' ',
+        phoneNumber: ' ',
+        gander: ' ',
+        birthday: ' ',
+        country: ' ',
+        city: ' ',
+    });
     const [values, setValues] = useState({
         email: '',
         password: '',
@@ -16,525 +60,375 @@ function RegesterPage(props) {
         firstName: '',
         lastName: '',
         phoneNumber: '',
-        country: '',
-        city: '',
         gander: '',
         birthday: '',
-    });
-
-    const [errors, setErrors] = useState({
-        email: '',
-        password: '',
-        confirmPassword: '',
-        firstName: '',
-        lastName: '',
-        phoneNumber: '',
         country: '',
         city: '',
-        gander: '',
-        birthday: '',
     });
-    const [isValid, setIsValid] = useState({
+    const [isTouched, setIsTouched] = useState({
         email: false,
         password: false,
         confirmPassword: false,
         firstName: false,
         lastName: false,
         phoneNumber: false,
-        country: false,
-        city: false,
         gander: false,
         birthday: false,
-    });
-    const [touched, setTouched] = useState({
-        email: false,
-        password: false,
-        confirmPassword: false,
-        firstName: false,
-        lastName: false,
-        phoneNumber: false,
         country: false,
         city: false,
-        gander: false,
-        birthday: false,
     });
-
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isValid, setIsValid] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [globalError, setGlobalError] = useState('');
+    const [messageError, setMessageError] = useState('');
 
-    const validate = (name, value) => {
-        console.log(name, value);
-        let error = { ...errors };
-    
-        if (!value) {
-            // setErrors({ ...errors, [name]: `${name} is required` });
-            error[name] = `${name} is required`;
-            setIsValid({ ...isValid, [name]: false });
-        } else {
-            switch (name) {
-                case 'email':
-                    if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value)) {
-                        error.email = 'Invalid email address';
-                        setIsValid({ ...isValid, [name]: false });
-                    }
-                    break;
-                case 'password':
-                    if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/i.test(value)) {
-                        error.password = 'Password must be at least 8 characters and contain at least one number and one letter';
-                        setIsValid({ ...isValid, [name]: false });
-                    }
-                    break;
-                case 'confirmPassword':
-                    if (value !== values.password) {
-                        error.confirmPassword = 'Password does not match';
-                        setIsValid({ ...isValid, [name]: false });
-                    }
-                    break;
-                case 'firstName':
-                    if (!/^[a-zA-Z]+$/i.test(value)) {
-                        error.firstName = 'First name must be letters only';
-                        setIsValid({ ...isValid, [name]: false });
-                    }
-                    break;
-                case 'lastName':
-                    if (!/^[a-zA-Z]+$/i.test(value)) {
-                        error.lastName = 'Last name must be letters only';
-                        setIsValid({ ...isValid, [name]: false });
-                    }
-                    break;
-                case 'phoneNumber':
-                    if (!/^[0-9]{10}$/i.test(value)) {
-                        error.phoneNumber = 'Phone number must be 10 digits';
-                        setIsValid({ ...isValid, [name]: false });
-                    }
-                    break;
-                case 'country':
-                    if (!/^[a-zA-Z]+$/i.test(value)) {
-                        error.country = 'Country must be letters only';
-                        setIsValid({ ...isValid, [name]: false });
-                    }
-                    break;
-                case 'city':
-                    if (!/^[a-zA-Z]+$/i.test(value)) {
-                        error.city = 'City must be letters only';
-                        setIsValid({ ...isValid, [name]: false });
-                    }
-                    break;
-                case 'gander':
-                    if (!/^(m|f){1,}$/i.test(value)) {
-                        error.gander = 'Gander must be m or f';
-                        setIsValid({ ...isValid, [name]: false });
-                    }
-                    break;
-                case 'birthday':
-                    if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/i.test(value)) {
-                        error.birthday = 'Birthday must be in format YYYY-MM-DD';
-                        setIsValid({ ...isValid, [name]: false });
-                    }
-                    break;
-                default:
-                    break;
-
-            }
+    const validation = (name, value) => {
+        switch (name) {
+            case 'email':
+                if (value.length === 0) {
+                    setErrors({ ...errors, email: 'Email is required' });
+                } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value)) {
+                    setErrors({ ...errors, email: 'Invalid email address' });
+                } else {
+                    setErrors({ ...errors, email: '' });
+                }
+                break;
+            case 'password':
+                if (value.length === 0) {
+                    setErrors({ ...errors, password: 'Password is required' });
+                } else if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/i.test(value)) {
+                    setErrors({ ...errors, password: 'Password must contain at least 8 characters, one letter and one number' });
+                } else {
+                    setErrors({ ...errors, password: '' });
+                }
+                break;
+            case 'confirmPassword':
+                if (value.length === 0) {
+                    setErrors({ ...errors, confirmPassword: 'Confirm password is required' });
+                } else if (value !== values.password) {
+                    setErrors({ ...errors, confirmPassword: 'Password does not match' });
+                } else {
+                    setErrors({ ...errors, confirmPassword: '' });
+                }
+                break;
+            case 'firstName':
+                if (value.length === 0) {
+                    setErrors({ ...errors, firstName: 'First name is required' });
+                } else if (!/^[a-zA-Z]*$/i.test(value)) {
+                    setErrors({ ...errors, firstName: 'First name must contain only letters' });
+                } else {
+                    setErrors({ ...errors, firstName: '' });
+                }
+                break;
+            case 'lastName':
+                if (value.length === 0) {
+                    setErrors({ ...errors, lastName: 'Last name is required' });
+                } else if (!/^[a-zA-Z]*$/i.test(value)) {
+                    setErrors({ ...errors, lastName: 'Last name must contain only letters' });
+                } else {
+                    setErrors({ ...errors, lastName: '' });
+                }
+                break;
+            case 'phoneNumber':
+                if (value.length === 0) {
+                    setErrors({ ...errors, phoneNumber: 'Phone number is required' });
+                } else if (!/^[0-9]*$/i.test(value)) {
+                    setErrors({ ...errors, phoneNumber: 'Phone number must contain only numbers' });
+                } else {
+                    setErrors({ ...errors, phoneNumber: '' });
+                }
+                break;
+            case 'gander':
+                if (value.length === 0) {
+                    setErrors({ ...errors, gander: 'Gander is required' });
+                } else if (!/^f|m/i.test(value)) {
+                    setErrors({ ...errors, gander: 'Gander must be f or m' });
+                } else {
+                    setErrors({ ...errors, gander: '' });
+                }
+                break;
+            case 'birthday':
+                if (value.length === 0) {
+                    setErrors({ ...errors, birthday: 'Birthday is required' });
+                } else if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/i.test(value)) {
+                    setErrors({ ...errors, birthday: 'Birthday must be in format YYYY-MM-DD' });
+                } else {
+                    setErrors({ ...errors, birthday: '' });
+                }
+                break;
+            case 'country':
+                if (value.length === 0) {
+                    setErrors({ ...errors, country: 'Country is required' });
+                } else if (!/^[a-zA-Z]*$/i.test(value)) {
+                    setErrors({ ...errors, country: 'Country must contain only letters' });
+                } else {
+                    setErrors({ ...errors, country: '' });
+                }
+                break;
+            case 'city':
+                if (value.length === 0) {
+                    setErrors({ ...errors, city: 'City is required' });
+                } else if (!/^[a-zA-Z]*$/i.test(value)) {
+                    setErrors({ ...errors, city: 'City must contain only letters' });
+                } else {
+                    setErrors({ ...errors, city: '' });
+                }
+                break;
+            default:
+                break;
         }
-        setErrors(error);
-        console.log(error)
-        console.log(errors);
-    }
+    };
 
     const handleChange = (event) => {
         const { name, value } = event.target;
         setValues({ ...values, [name]: value });
-        // setTouched({ ...touched, [name]: true });
-        validate(name, value);
-    }
+        // setIsTouched({ ...isTouched, [name]: true });
+        validation(name, value);
+    };
+
+    const handleTouched = (event) => {
+        const { name } = event.target;
+        setIsTouched({ ...isTouched, [name]: true });
+    };
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        setIsSubmitting(true);
-        setGlobalError('');
         setIsLoading(true);
+        setMessageError('');
+        const data = {
+            email: values.email,
+            password: values.password,
+            firstName: values.firstName,
+            lastName: values.lastName,
+            phoneNumber: values.phoneNumber,
+            gander: values.gander,
+            birthday: values.birthday,
+            country: values.country,
+            city: values.city,
+        };
         try {
-            props.register(values)
+            props.register(data);
         } catch (error) {
-            setGlobalError(error.message);
+            setMessageError(error.message);
             setIsLoading(false);
-            setIsSubmitting(false);
         }
-    }
+    };
 
-    const handleBlur = (event) => {
-        const { name } = event.target;
-        setTouched({ ...touched, [name]: true });
-        validate(name, values[name]);
-        console.log('blur')
-    }
+    useEffect(() => {
+        if (props.isAuthenticated) {
+            props.history.push('/');
+        }
+    }, [props.isAuthenticated]);
 
-    const handleFocus = (event) => {
-        const { name } = event.target;
-        setTouched({ ...touched, [name]: false });
-    }
+    useEffect(() => {
+        if (props.error) {
+            setMessageError(props.error);
+            setIsLoading(false);
+        }
+    }, [props.error]);
+
+
 
     return (
-        <Container className="mt-5">
-            <Card className="shadow-lg mb-2 bg-white rounded ">
-                <Card.Header className="text-center">
-                    <h3>Register</h3>
-                </Card.Header>
-                <Card.Body>
-                    <Card.Subtitle className="mb-2 text-muted text-center">
-                        {globalError && <Alert variant="danger">{globalError}</Alert>}
-                    </Card.Subtitle>
-                    <Formik
-                        onSubmit={handleSubmit}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        initialValues={values}
-                        errors={errors}
-                        touched={touched}
-                    >
-                        {() => (
-                            <Form onSubmit={handleSubmit}>
-                                <Form.Group controlId="firstName"  className="mt-2">
-                                    <FloatingLabel
-                                        controlId="firstName"
-                                        label="First name"
-                                    >
-                                        <Form.Control
-                                            type="text"
-                                            name="firstName"
-                                            label="First name"
-                                            value={values.firstName}
-                                            onFocus={handleFocus}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={errors.firstName}
-                                            isValid={isValid.firstName && touched.firstName}
-                                            isInvalid={touched.firstName && errors.firstName}
-                                            required={true}
+        <Container className="themed-container" fluid="xm">
+            <Col md={10} xm={12} lg={7} xl={7} className="mx-auto">
+                <Card className="text-center">
+                    <Card.Header>
+                        <h2>Login</h2>
+                    </Card.Header>
+                    <Card.Body>
+                        {messageError && <Alert variant="danger">{messageError}</Alert>}
+                        <Form
+                            name="normal_login"
+                            className="login-form"
+                            initialValues={{ values }}
+                        >
+                            <Form.Item
+                                name="email"
+                                validateStatus={errors.email && isTouched.email ? 'error' : isTouched.email ? 'success' : ''}
+                                help={errors.email && isTouched.email ? errors.email : null}
+                                onBlur={handleTouched}
+                                hasFeedback
+                            >
+                                <Input
+                                    prefix={<UserOutlined className="site-form-item-icon" />}
+                                    placeholder="Email"
+                                    name="email"
+                                    value={values.email}
+                                    onChange={handleChange}
 
-                                            style={{
-                                                boxShadow: errors.firstName ? '0 4px 2px -2px rgba(255,0,0,0.5)' :
-                                                    (isValid.firstName) ? '0 4px 2px -2px green' :
-                                                        (touched.firstName) ? '0 4px 2px -2px #4285f4' :
-                                                            '0 4px 2px -2px rgba(0,0,0,0.5)',
-                                            }}
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                hasFeedback
+                                name="password"
+                                validateStatus={errors.password && isTouched.password ? 'error' : isTouched.password ? 'success' : ''}
+                                help={errors.password && isTouched.password ? errors.password : null}
+                                onBlur={handleTouched}
+                            >
+                                <Input.Password
+                                    prefix={<LockOutlined className="site-form-item-icon" />}
+                                    type="password"
+                                    placeholder="Password"
+                                    name="password"
+                                    value={values.password}
+                                    onChange={handleChange}
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                name="confirmPassword"
+                                validateStatus={errors.confirmPassword && isTouched.confirmPassword ? 'error' : isTouched.confirmPassword ? 'success' : ''}
+                                help={errors.confirmPassword && isTouched.confirmPassword ? errors.confirmPassword : null}
+                                onBlur={handleTouched}
+                            >
+                                <Input.Password
+                                    prefix={<LockOutlined className="site-form-item-icon" />}
+                                    type="password"
+                                    placeholder="Confirm Password"
+                                    name="confirmPassword"
+                                    value={values.confirmPassword}
+                                    onChange={handleChange}
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                name="firstName"
+                                validateStatus={errors.firstName && isTouched.firstName ? 'error' : isTouched.firstName ? 'success' : ''}
+                                help={errors.firstName && isTouched.firstName ? errors.firstName : null}
+                                onBlur={handleTouched}
+                                hasFeedback
+                            >
+                                <Input
+                                    prefix={<UserOutlined className="site-form-item-icon" />}
+                                    placeholder="First Name"
+                                    name="firstName"
+                                    value={values.firstName}
+                                    onChange={handleChange}
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                name="lastName"
+                                validateStatus={errors.lastName && isTouched.lastName ? 'error' : isTouched.lastName ? 'success' : ''}
+                                help={errors.lastName && isTouched.lastName ? errors.lastName : null}
+                                onBlur={handleTouched}
+                                hasFeedback
+                            >
+                                <Input
+                                    prefix={<UserOutlined className="site-form-item-icon" />}
+                                    placeholder="Last Name"
+                                    name="lastName"
+                                    value={values.lastName}
+                                    onChange={handleChange}
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                name="phoneNumber"
+                                validateStatus={errors.phoneNumber && isTouched.phoneNumber ? 'error' : isTouched.phoneNumber ? 'success' : ''}
+                                help={errors.phoneNumber && isTouched.phoneNumber ? errors.phoneNumber : null}
+                                onBlur={handleTouched}
+                                hasFeedback
+                            >
+                                <Input
+                                    prefix={<UserOutlined className="site-form-item-icon" />}
+                                    placeholder="Phone Number"
+                                    name="phoneNumber"
+                                    value={values.phoneNumber}
+                                    onChange={handleChange}
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                name="gander"
+                                validateStatus={errors.gander && isTouched.gander ? 'error' : isTouched.gander ? 'success' : ''}
+                                help={errors.gander && isTouched.gander ? errors.gander : null}
+                                onBlur={handleTouched}
+                                hasFeedback
+                            >
+                                <Select
+                                    placeholder="Gander"
+                                    name="gander"
+                                    value={values.gander}
+                                    onChange={handleChange}
+                                >
+                                    <Option value="m" >m</Option>
+                                    <Option value="f" ></Option>
+                                </Select>
+                            </Form.Item>
+                            <Form.Item
+                                name="birthday"
+                                validateStatus={errors.birthday && isTouched.birthday ? 'error' : isTouched.birthday ? 'success' : ''}
+                                help={errors.birthday && isTouched.birthday ? errors.birthday : null}
+                                onBlur={handleTouched}
+                                hasFeedback
+                            >
+                                <DatePicker
+                                    placeholder="Birthday"
+                                    name="birthday"
+                                    value={values.birthday}
+                                    onChange={handleChange}
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                name="country"
+                                validateStatus={errors.country && isTouched.country ? 'error' : isTouched.country ? 'success' : ''}
+                                help={errors.country && isTouched.country ? errors.country : null}
+                                onBlur={handleTouched}
+                                hasFeedback
+                            >
+                                <Select
+                                    placeholder="Country"
+                                    name="country"
+                                    value={values.country}
+                                    onChange={handleChange}
+                                >
+                                    {countries.map(country => (
+                                        <Option value={country.value}>{country.label}</Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                            <Form.Item
+                                name="city"
+                                validateStatus={errors.city && isTouched.city ? 'error' : isTouched.city ? 'success' : ''}
+                                help={errors.city && isTouched.city ? errors.city : null}
+                                onBlur={handleTouched}
+                                hasFeedback
+                            >
+                                <Input
+                                    prefix={<UserOutlined className="site-form-item-icon" />}
+                                    placeholder="City"
+                                    name="city"
+                                    value={values.city}
+                                    onChange={handleChange}
+                                />
+                            </Form.Item>
+                            {/* <Form.Item */}
 
-                                        />
-                                        <Form.Control.Feedback type="invalid" tooltip>
-                                            {errors.firstName}
-                                        </Form.Control.Feedback>
-                                    </FloatingLabel>
-                                </Form.Group>
-                                <Form.Group controlId="lastName" className="mt-2">
-                                    <FloatingLabel
-                                        controlId="lastName"
-                                        label="Last name"
-                                    >
-                                        <Form.Control
-                                            type="text"
-                                            name="lastName"
-                                            label="Last name"
-                                            value={values.lastName}
-                                            onFocus={handleFocus}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={errors.lastName}
-                                            isValid={isValid.lastName && touched.lastName}
-                                            isInvalid={touched.lastName && errors.lastName}
-                                            required={true}
-
-                                            style={{
-                                                boxShadow: errors.lastName ? '0 4px 2px -2px rgba(255,0,0,0.5)' :
-                                                    (isValid.lastName) ? '0 4px 2px -2px green' :
-                                                        (touched.lastName) ? '0 4px 2px -2px #4285f4' :
-                                                            '0 4px 2px -2px rgba(0,0,0,0.5)',
-                                            }}
-
-                                        />
-                                        <Form.Control.Feedback type="invalid" tooltip>
-                                            {errors.lastName}
-                                        </Form.Control.Feedback>
-                                    </FloatingLabel>
-                                </Form.Group>
-                                <Form.Group controlId="email" className="mt-2">
-                                    <FloatingLabel
-                                        controlId="email"
-                                        label="Email"
-                                    >
-                                        <Form.Control
-                                            type="email"
-                                            name="email"
-                                            label="Email"
-                                            value={values.email}
-                                            onFocus={handleFocus}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={errors.email}
-                                            isValid={isValid.email && touched.email}
-                                            isInvalid={touched.email && errors.email}
-                                            required={true}
-
-                                            style={{
-                                                boxShadow: errors.email ? '0 4px 2px -2px rgba(255,0,0,0.5)' :
-                                                    (isValid.email) ? '0 4px 2px -2px green' :
-                                                        (touched.email) ? '0 4px 2px -2px #4285f4' :
-                                                            '0 4px 2px -2px rgba(0,0,0,0.5)',
-                                            }}
-
-                                        />
-                                        <Form.Control.Feedback type="invalid" tooltip>
-                                            {errors.email}
-                                        </Form.Control.Feedback>
-                                    </FloatingLabel>
-                                </Form.Group>
-                                <Form.Group controlId="password" className="mt-2">
-                                    <FloatingLabel
-                                        controlId="password"
-                                        label="Password"
-                                    >
-                                        <Form.Control
-                                            type="password"
-                                            name="password"
-                                            label="Password"
-                                            value={values.password}
-                                            onFocus={handleFocus}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={errors.password}
-                                            isValid={isValid.password && touched.password}
-                                            isInvalid={touched.password && errors.password}
-                                            required={true}
-
-                                            style={{
-                                                boxShadow: errors.password ? '0 4px 2px -2px rgba(255,0,0,0.5)' :
-                                                    (isValid.password) ? '0 4px 2px -2px green' :
-                                                        (touched.password) ? '0 4px 2px -2px #4285f4' :
-                                                            '0 4px 2px -2px rgba(0,0,0,0.5)',
-                                            }}
-
-                                        />
-                                        <Form.Control.Feedback type="invalid" tooltip>
-                                            {errors.password}
-                                        </Form.Control.Feedback>
-                                    </FloatingLabel>
-                                </Form.Group>
-                                <Form.Group controlId="confirmPassword" className="mt-2">
-                                    <FloatingLabel
-                                        controlId="confirmPassword"
-                                        label="Confirm password"
-                                    >
-                                        <Form.Control
-                                            type="password"
-                                            name="confirmPassword"
-                                            label="ConfirmPassword"
-                                            value={values.confirmPassword}
-                                            onFocus={handleFocus}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={errors.confirmPassword}
-                                            isValid={isValid.confirmPassword && touched.confirmPassword}
-                                            isInvalid={touched.confirmPassword && errors.confirmPassword}
-                                            required={true}
-
-                                            style={{
-                                                boxShadow: errors.confirmPassword ? '0 4px 2px -2px rgba(255,0,0,0.5)' :
-                                                    (isValid.confirmPassword) ? '0 4px 2px -2px green' :
-                                                        (touched.confirmPassword) ? '0 4px 2px -2px #4285f4' :
-                                                            '0 4px 2px -2px rgba(0,0,0,0.5)',
-                                            }}
-
-                                        />
-                                        <Form.Control.Feedback type="invalid" tooltip>
-                                            {errors.confirmPassword}
-                                        </Form.Control.Feedback>
-                                    </FloatingLabel>
-                                </Form.Group>
-                                <Form.Group controlId="phoneNumber" className="mt-2">
-                                    <FloatingLabel
-                                        controlId="phoneNumber"
-                                        label="Phone"
-                                    >
-                                        <Form.Control
-                                            type="text"
-                                            name="phoneNumber"
-                                            
-                                            value={values.phoneNumber}
-                                            onFocus={handleFocus}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={errors.phoneNumber}
-                                            isValid={isValid.phoneNumber && touched.phoneNumber}
-                                            isInvalid={touched.phoneNumber && errors.phoneNumber}
-                                            required={true}
-
-                                            style={{
-                                                boxShadow: errors.phoneNumber ? '0 4px 2px -2px rgba(255,0,0,0.5)' :
-                                                    (isValid.phoneNumber) ? '0 4px 2px -2px green' :
-                                                        (touched.phoneNumber) ? '0 4px 2px -2px #4285f4' :
-                                                            '0 4px 2px -2px rgba(0,0,0,0.5)',
-                                            }}
-                                        />
-                                        <Form.Control.Feedback type="invalid" tooltip>
-                                            {errors.phoneNumber}
-                                        </Form.Control.Feedback>
-                                    </FloatingLabel>
-                                </Form.Group>
-                                <Form.Group controlId="country" className="mt-2">
-                                    <FloatingLabel
-                                        controlId="country"
-                                        label="Country"
-                                    >
-                                        <Form.Control
-                                            type="text"
-                                            name="country"
-                                            label="Country"
-                                            value={values.country}
-                                            onFocus={handleFocus}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={errors.country}
-                                            isValid={isValid.country && touched.country}
-                                            isInvalid={touched.country && errors.country}
-                                            required={true}
-
-                                            style={{
-                                                boxShadow: errors.country ? '0 4px 2px -2px rgba(255,0,0,0.5)' :
-                                                    (isValid.country) ? '0 4px 2px -2px green' :
-                                                        (touched.country) ? '0 4px 2px -2px #4285f4' :
-                                                            '0 4px 2px -2px rgba(0,0,0,0.5)',
-                                            }}
-                                        />
-                                        <Form.Control.Feedback type="invalid" tooltip>
-                                            {errors.country}
-                                        </Form.Control.Feedback>
-                                    </FloatingLabel>
-                                </Form.Group>
-                                <Form.Group controlId="city" className="mt-2">
-                                    <FloatingLabel
-                                        controlId="city"
-                                        label="City"
-                                    >
-                                        <Form.Control
-                                            type="text"
-                                            name="city"
-                                            label="City"
-                                            value={values.city}
-                                            onFocus={handleFocus}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={errors.city}
-                                            isValid={isValid.city && touched.city}
-                                            isInvalid={touched.city && errors.city}
-                                            required={true}
-
-                                            style={{
-                                                boxShadow: errors.city ? '0 4px 2px -2px rgba(255,0,0,0.5)' :
-                                                    (isValid.city) ? '0 4px 2px -2px green' :
-                                                        (touched.city) ? '0 4px 2px -2px #4285f4' :
-                                                            '0 4px 2px -2px rgba(0,0,0,0.5)',
-                                            }}
-                                        />
-                                        <Form.Control.Feedback type="invalid" tooltip>
-                                            {errors.city}
-                                        </Form.Control.Feedback>
-                                    </FloatingLabel>
-                                </Form.Group>
-                                <Form.Group controlId="gander" className="mt-2">
-                                    <FloatingLabel
-                                        controlId="gander"
-                                        label="Gander"
-                                    >
-                                        <Form.Control
-                                            type="text"
-                                            name="gander"
-                                            label="Gander"
-                                            value={values.gander}
-                                            onFocus={handleFocus}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={errors.gander}
-                                            isValid={isValid.gander && touched.gander}
-                                            isInvalid={touched.gander && errors.gander}
-                                            required={true}
-
-                                            style={{
-                                                boxShadow: errors.gander ? '0 4px 2px -2px rgba(255,0,0,0.5)' :
-                                                    (isValid.gander) ? '0 4px 2px -2px green' :
-                                                        (touched.gander) ? '0 4px 2px -2px #4285f4' :
-                                                            '0 4px 2px -2px rgba(0,0,0,0.5)',
-                                            }}
-                                        />
-                                        <Form.Control.Feedback type="invalid" tooltip>
-                                            {errors.gander}
-                                        </Form.Control.Feedback>
-                                    </FloatingLabel>
-                                </Form.Group>
-                                <Form.Group controlId="birthday" className="mt-2">
-                                    <FloatingLabel
-                                        controlId="birthday"
-                                        label="Birthday"
-                                    >
-                                        <Form.Control
-                                            type="text"
-                                            name="birthday"
-                                            label="Birthday"
-                                            value={values.birthday}
-                                            onFocus={handleFocus}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={errors.birthday}
-                                            isValid={isValid.birthday && touched.birthday}
-                                            isInvalid={touched.birthday && errors.birthday}
-                                            required={true}
-
-                                            style={{
-                                                boxShadow: errors.birthday ? '0 4px 2px -2px rgba(255,0,0,0.5)' :
-                                                    (isValid.birthday) ? '0 4px 2px -2px green' :
-                                                        (touched.birthday) ? '0 4px 2px -2px #4285f4' :
-                                                            '0 4px 2px -2px rgba(0,0,0,0.5)',
-                                            }}
-                                        />
-                                        <Form.Control.Feedback type="invalid" tooltip>
-                                            {errors.birthday}
-                                        </Form.Control.Feedback>
-                                    </FloatingLabel>
-                                </Form.Group>
-                                <Button variant="primary" type="submit" className="mt-4 w-100" block="true" size="lg"
-                                    disabled={!Object.keys(isValid).every(key => isValid[key] === true) || isLoading}>
-                                    {isLoading ? 'Loading...' : 'Login'}
+                            <Form.Item>
+                                <Button type="primary" htmlType="submit" className="login-form-button"
+                                    onClick={handleSubmit}
+                                    loading={isLoading}
+                                    disabled={!isValid}
+                                >
+                                    Log in
                                 </Button>
-                            </Form>
-                        )}
-                    </Formik>
-                    <Card.Footer className="text-center d-flex justify-content-between mt-4">
-                        <Link to="/register">
-                            <Button variant="link" className="">
-                                Register
-                            </Button>
-                        </Link>
-                        <Link to="/forgot-password">
-                            <Button variant="link" className="">
-                                Forgot Password
-                            </Button>
-                        </Link>
+                            </Form.Item>
+                        </Form>
+                    </Card.Body>
+                    <Card.Footer className="text-center d-flex justify-content-between">
+                        <Link to="/login">Login</Link>
+                        <Link to="/forgot-password">Forgot password</Link>
+
                     </Card.Footer>
-                </Card.Body>
-            </Card>
+                </Card>
+            </Col>
         </Container>
-
-
     )
-
 }
 
-const mapStateToProps = (state) => ({
-    isAuthenticated: state.auth.isAuthenticated,
-    error: state.error
-});
+const mapStateToProps = ({ auth }) => {
+    return {
+        isAthenticated: auth.isAuthenticated,
+        error: auth.error
+    }
+}
 
-const Register = connect(mapStateToProps, { register })(RegesterPage);
-
+const Register = connect(mapStateToProps, { register })(RegisterPage);
 
 export { Register };

@@ -1,137 +1,135 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'
 import { Form, Input, Button, Checkbox, Typography } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { Container, Card } from 'react-bootstrap';
+import { Container, Card, Alert, Col } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { forgotPassword } from '../../actions';
+import 'antd/dist/antd.css';
 
 
 import 'antd/dist/antd.css';
 
 
 const ForgotPasswordPage = (props) => {
-    const [values, setValues] = useState({
-        email: '',
-        password: '',
-        remember: false,
-    });
-    const [errors , setErrors] = useState({
-        email: '',
-        password: ''
-    });
-    const [isValid , setIsValid] = useState({
-        email: false,
-        password: false
-    });
-    const [isLoading , setIsLoading] = useState(false);
-    const [isSuccess , setIsSuccess] = useState(false);
+    const [value, setValue] = useState('');
+    const [error, setError] = useState(' ');
+    const [isValid, setIsValid] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [touched, setTouched] = useState(false);
+    const [messageError, setMessageError] = useState('');
 
-    const validation = (e) => {
-        const { name, value } = e.target;
-        let error = '';
-        if (name === 'email') {
-            if (value.length === 0) {
-                error = 'Email is required';
-            } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value)) {
-                error = 'Invalid email address';
-            }
-        } else if (name === 'password') {
-            if (value.length === 0) {
-                error = 'Password is required';
-            } else if (value.length < 6) {
-                error = 'Password must be at least 6 characters';
-            }
+
+    const validateEmail = (email) => {
+        if (!email) {
+            setError('Email is required');
         }
-        setErrors({ ...errors, [name]: error });
-        setIsValid({ ...isValid, [name]: error ? false : true });
-        console.log(e , 'test');
-        console.log(errors, 'errors');
-    };
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            setError('Invalid email address');
+        }
+        else {
+            setError('');
+        }
+
+    }
 
     const handleChange = (e) => {
-        console.log(e.target.value);
-        validation(e);
-    };
+        setValue(e.target.value);
+        // setTouched(true);
+        validateEmail(e.target.value);
+        error === '' ? setIsValid(true) : setIsValid(false);
+    }
 
+    const handleTouched = () => {
+        setTouched(true);
+    }
 
-    const handleSubmit = (values) => {
+    const handleSubmit = (e) => {
+        e.preventDefault();
         setIsLoading(true);
-        props.forgotPassword(values, () => {
+        try {
+            props.forgotPassword(value);
+        } catch (error) {
+            console.log(error);
             setIsLoading(false);
-            setIsSuccess(true);
-        });
-    };
+            setMessageError(error.response.data.message);
+        }
+    }
 
-    const onFinish = (values) => {
-        console.log('Success:', values);
-    };
-
-    const onFinishFailed = (errorInfo) => {
-        console.log('Failed:', errorInfo);
-    };
+    useEffect(() => {
+        if (props.error) {
+            console.log(props.error, 'error');
+            setIsLoading(false);
+            setIsValid(false);
+            if (!props.error.errors)
+                setMessageError(props.error.message);
+            else {
+                const error = { ...error };
+                props.error.errors.forEach(element => {
+                    error[element.param] = element.msg;
+                });
+                setError(error);
+            }
+        }
+    }, [props.error]);
 
     return (
-        <Container>
-            <Card className="login-card ">
-                <Card.Header>
-                    <Card.Title className="text-center">Forgot Password</Card.Title>
-                </Card.Header>
-                <Card.Body>
-                    <Form
-                        name="normal_login"
-                        className="login-form"
-                        initialValues={{ setValues }}
-                        onFinish={onFinish}
-                        onFinishFailed={onFinishFailed}
-                        onChange={handleChange}
-                    >
-                        <Form.Item
-                            name="email"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: 'Please input your Email!',
-                                },
-                            ]}
-                            error={errors.email}
+        <Container className="themed-container" fluid="xm">
+            <Col md={10} xm={12} lg={7} xl={7} className="mx-auto">
+                <Card className="text-center">
+                    <Card.Header>
+                        <h2>Login</h2>
+                    </Card.Header>
+                    <Card.Body>
+                        {messageError && <Alert variant="danger">{messageError}</Alert>}
+                        <Form
+                            name="normal_login"
+                            className="login-form"
+                            initialValues={{ value }}
                         >
-                            <Input
-                                prefix={<UserOutlined className="site-form-item-icon" />}
-                                placeholder="Email"
+                            <Form.Item
                                 name="email"
-
-                            />
-                        </Form.Item>
-
-                        <Form.Item>
-                            <Button type="primary" htmlType="submit" className="login-form-button w-100" size="lg"
-                                loading={isLoading}
-                                disabled={!isValid.email}
-                                onClick={() => handleSubmit({ email: values.email })}
+                                validateStatus={error && touched ? 'error' : touched ? 'success' : ''}
+                                help={error && touched ? error : null}
+                                onBlur={handleTouched}
+                                hasFeedback
                             >
-                                Send
-                            </Button>
-                        </Form.Item>
-                    </Form>
-                </Card.Body>
-                <Card.Footer className="text-center d-flex justify-content-between">
-                    <Link to="/login">
-                        <Button type="primary">
-                            Login
-                        </Button>
-                    </Link>
-                    <Link to="/register">
-                        <Button type="primary">
-                            Register
-                        </Button>
-                    </Link>
-                </Card.Footer>
-            </Card>
+                                <Input
+                                    prefix={<UserOutlined className="site-form-item-icon" />}
+                                    placeholder="Email"
+                                    name="email"
+                                    value={value}
+                                    onChange={handleChange}
+
+                                />
+                            </Form.Item>
+                            <Form.Item>
+                                <Button type="primary" htmlType="submit" className="login-form-button"
+                                    onClick={handleSubmit}
+                                    loading={isLoading}
+                                    disabled={!isValid}
+                                >
+                                    Log in
+                                </Button>
+                            </Form.Item>
+                        </Form>
+                    </Card.Body>
+                    <Card.Footer className="text-center d-flex justify-content-between">
+                        <Link to="/login">Login</Link>
+                        <Link to="/register">Don't have an account?</Link>
+                    </Card.Footer>
+                </Card>
+            </Col>
         </Container>
     );
 }
 
-const ForgotPassword = connect(null, { forgotPassword })(ForgotPasswordPage);
+const mapStateToProps = ({ auth }) => {
+    console.log(auth.error, 'auth');
+    return {
+        error: auth.error
+    };
+}
+const ForgotPassword = connect(mapStateToProps, { forgotPassword })(ForgotPasswordPage);
 
 export { ForgotPassword }
