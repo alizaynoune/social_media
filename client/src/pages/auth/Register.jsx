@@ -54,6 +54,21 @@ function RegisterPage(props) {
     city: "",
   });
 
+  const [isValid, setIsValid] = useState({
+    firstName: false,
+    lastName: false,
+    email: false,
+    password: false,
+    confirmPassword: false,
+    gander: false,
+    phoneNumber: false,
+    birthDay: false,
+    coutry: false,
+    city: false,
+  });
+
+  useEffect(() => { console.log(stepStatus) }, [stepStatus]);
+
   const [errors, setErrors] = useState({
     firstName: "",
     lastName: "",
@@ -79,9 +94,9 @@ function RegisterPage(props) {
     }
   };
 
-  useEffect(() => {
-    // console.log(values.email, 'test')
-  }, [values.email])
+  // useEffect(() => {
+  //   // console.log(values.email, 'test')
+  // }, [values.email])
 
   return (
     <Container>
@@ -105,9 +120,25 @@ function RegisterPage(props) {
             initialValues={{ values }}
           >
             {/* Form user info */}
-            {step === 0 && <FormInfo values={values} setValues={setValues} errors={errors} setErrors={setErrors} step={step} stepStatus={stepStatus} setStepStatus={setStepStatus} />}
+            {step === 0 && <FormInfo
+              step={step}
+              values={values} setValues={setValues}
+              errors={errors} setErrors={setErrors}
+              stepStatus={stepStatus} setStepStatus={setStepStatus}
+              isValid={isValid} setIsValid={setIsValid}
+            />}
             {/* Form user detail */}
-            {step === 1 && <FormDetail values={values} setValues={setValues} errors={errors} setErrors={setErrors} step={step} stepStatus={stepStatus} setStepStatus={setStepStatus} />}
+            {step === 1 && <FormDetail
+              step={step}
+              values={values} setValues={setValues}
+              errors={errors} setErrors={setErrors}
+              stepStatus={stepStatus} setStepStatus={setStepStatus}
+            />}
+            {/* Form user verify */}
+            {step === 2 && <h2>Verify</h2>}
+            {/* Form user complete */}
+            {step === 3 && <h2>complete</h2>}
+
           </Form>
         </Card.Body>
         <Card.Footer className=" ">
@@ -131,12 +162,8 @@ function RegisterPage(props) {
           </Row>
         </Card.Footer>
         <Card.Footer className="d-flex justify-content-between">
-          {/* <Col className="justify-content-start"> */}
           <Link to="/login">Login</Link>
-          {/* </Col> */}
-          {/* <Col className="justify-content-end"> */}
           <Link to="/forgot-password">Forgot password</Link>
-          {/* </Col> */}
         </Card.Footer>
       </Card>
     </Container>

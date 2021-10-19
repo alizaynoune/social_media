@@ -27,15 +27,10 @@ const FormUserInfoComponent = (props) => {
     values, setValues,
     errors, setErrors,
     stepStatus, setStepStatus,
+    isValid, setIsValid,
 
   } = props;
   const [isTouched, setIsTouched] = useState({
-    email: false,
-    password: false,
-    confirmPassword: false,
-  });
-
-  const [isValid, setIsValid] = useState({
     email: false,
     password: false,
     confirmPassword: false,
@@ -95,13 +90,17 @@ const FormUserInfoComponent = (props) => {
 
 
   useEffect(() => {
-    console.log(Object.values(isValid).every((value) => value === true), 'isTouched');
-    let Valid = Object.values(isValid).every((value) => value === true);
+    // console.log(Object.values(isValid).every((value) => value === true), 'isTouched');
+    let Valid = true;
     let Touched = Object.values(isTouched).every((value) => value === true);
+    let keys = Object.keys(isTouched);
+    keys.forEach((key) => {
+      if (isValid[key] === false) {
+        Valid = false;
+      }
+    });
     Valid ? setStepStatus({ ...stepStatus, [step]: "finish" }) : Touched ? setStepStatus({ ...stepStatus, [step]: "error" }) : setStepStatus({ ...stepStatus, [step]: "process" });
-    // Object.values(isValid).every((value) => value === true) && Object.values(isTouched).every((value) => value === true) && setStepStatus({ ...stepStatus, [step]: 'finish' });
-    // Object.values(isTouched).every((value) => value === true) && Object.values(isValid).every((value) => value === true) ? setStepStatus({ ...stepStatus, [step]: 'finish' });
-  }, [isValid]);
+  }, [values]);
 
 
 
