@@ -29,7 +29,6 @@ function LoginPage(props) {
 
     const validation = (e) => {
         const { name, value } = e.target;
-        // console.log(name, value, '===>');
         let error = '';
         switch (name) {
             case 'email':
