@@ -18,6 +18,7 @@ import {
   IdcardOutlined,
   FileTextOutlined,
   FileDoneOutlined,
+  MailOutlined
 } from "@ant-design/icons";
 import ColumnGroup from "rc-table/lib/sugar/ColumnGroup";
 
@@ -31,6 +32,8 @@ const FormUserInfoComponent = (props) => {
 
   } = props;
   const [isTouched, setIsTouched] = useState({
+    firstName: false,
+    lastName: false,
     email: false,
     password: false,
     confirmPassword: false,
@@ -39,7 +42,22 @@ const FormUserInfoComponent = (props) => {
 
   const validate = (name, value) => {
     let error = "";
+    console.log(name , '<<name')
     switch (name) {
+      case "firstName":
+        if (!value) {
+          error = "First name is required";
+        } else if (!/^[A-Za-z]+$/i.test(value)) {
+          error = "First name must contain only characters"
+        }
+        break
+      case "lastName":
+        if (!value) {
+          error = "Last name is required";
+        } else if (!/^[A-Za-z]+$/i.test(value)) {
+          error = "Last name must contain only characters"
+        }
+        break
       case "email":
         if (!value) {
           error = "Email is required";
@@ -65,10 +83,11 @@ const FormUserInfoComponent = (props) => {
     if (error) {
       setErrors({ ...errors, [name]: error });
       setIsValid({ ...isValid, [name]: false });
-    }else{
+    } else {
       setErrors({ ...errors, [name]: "" });
       setIsValid({ ...isValid, [name]: true });
     }
+    console.log(error, '<<<error')
   };
 
 
@@ -108,6 +127,40 @@ const FormUserInfoComponent = (props) => {
   return (
     <>
       <Form.Item
+        name="firstName"
+        validateStatus={
+          errors.firstName && isTouched.firstName ? "error" : isTouched.firstName ? "success" : ""
+        }
+        help={errors.firstName && isTouched.firstName ? errors.firstName : null}
+        onBlur={handleBlur}
+        hasFeedback
+      >
+        <Input
+          prefix={<UserOutlined className="site-form-item-icon" />}
+          placeholder="First name"
+          name="firstName"
+          value={values.firstName}
+          onChange={handleChange}
+        />
+      </Form.Item>
+      <Form.Item
+        name="lastName"
+        validateStatus={
+          errors.lastName && isTouched.lastName ? "error" : isTouched.lastName ? "success" : ""
+        }
+        help={errors.lastName && isTouched.lastName ? errors.lastName : null}
+        onBlur={handleBlur}
+        hasFeedback
+      >
+        <Input
+          prefix={<UserOutlined className="site-form-item-icon" />}
+          placeholder="lastName"
+          name="lastName"
+          value={values.lastName}
+          onChange={handleChange}
+        />
+      </Form.Item>
+      <Form.Item
         name="email"
         validateStatus={
           errors.email && isTouched.email ? "error" : isTouched.email ? "success" : ""
@@ -117,7 +170,7 @@ const FormUserInfoComponent = (props) => {
         hasFeedback
       >
         <Input
-          prefix={<UserOutlined className="site-form-item-icon" />}
+          prefix={<MailOutlined className="site-form-item-icon" />}
           placeholder="Email"
           name="email"
           value={values.email}

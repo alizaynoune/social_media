@@ -30,7 +30,8 @@ const UserSchema = mongoose.Schema({
     },
     gander: {
         type: String,
-        enum: ['m', 'f'],
+        enum: ['m', 'f', null],
+        default: null,
         required: [true, 'Grander is required, Please provide it'],
     },
     birthday: {
@@ -56,7 +57,7 @@ const UserSchema = mongoose.Schema({
         min: 8,
         select: false,
     },
-    avatar_url: {
+    avatar: {
         type: String,
         default: null,
     },

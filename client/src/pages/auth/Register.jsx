@@ -52,6 +52,7 @@ function RegisterPage(props) {
     birthDay: "",
     coutry: "",
     city: "",
+    avater: "",
   });
 
   const [isValid, setIsValid] = useState({
