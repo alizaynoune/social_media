@@ -80,7 +80,8 @@ function RegisterPage(props) {
     phoneNumber: "",
     birthDay: "",
     coutry: "",
-    city: ""
+    city: "",
+    avatar: "",
   })
 
   const nextStep = () => {

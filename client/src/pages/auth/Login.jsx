@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, Checkbox, Typography } from "antd";
+import { Form, Input, Button, Checkbox, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { Container, Card, Alert, Col } from "react-bootstrap";
 import { Link } from "react-router-dom";
@@ -8,23 +8,23 @@ import { singIn } from "../../actions";
 import "antd/dist/antd.css";
 
 function LoginPage(props) {
-  const [errors, setErrors] = React.useState({
+  const [errors, setErrors] = useState({
     email: " ",
     password: " ",
   });
 
-  const [touched, setTouched] = React.useState({
+  const [touched, setTouched] = useState({
     email: false,
     password: false,
   });
 
-  const [values, setValues] = React.useState({
+  const [values, setValues] = useState({
     email: "",
     password: "",
   });
-  const [isValid, setIsValid] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [messageError, setMessageError] = React.useState("");
+  const [isValid, setIsValid] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  // const [messageError, setMessageError] = React.useState("");
 
   const validation = (e) => {
     const { name, value } = e.target;
@@ -99,17 +99,19 @@ function LoginPage(props) {
 
   useEffect(() => {
     if (props.error) {
-      console.log(props.error, "error");
+      let resError = props.error;
+      // console.log(props.error, "error");
       setIsLoading(false);
       setIsValid(false);
-      if (!props.error.errors) setMessageError(props.error.message);
-      else {
+      message.error(resError.message);
+      // if (!p.errors) setMessageError(props.error.message);
+      // else {
         const error = { ...errors };
-        props.error.errors.forEach((element) => {
+        resError?.errors?.forEach((element) => {
           error[element.param] = element.msg;
         });
         setErrors(error);
-      }
+      // }
     }
   }, [props.error]);
 
@@ -129,7 +131,7 @@ function LoginPage(props) {
             <h2>Login</h2>
           </Card.Header>
           <Card.Body>
-            {messageError && <Alert variant="danger">{messageError}</Alert>}
+            {/* {messageError && <Alert variant="danger">{messageError}</Alert>} */}
             <Form
               name="normal_login"
               className="login-form"

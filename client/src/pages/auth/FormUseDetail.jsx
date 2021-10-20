@@ -33,7 +33,7 @@ const FormUseDetailComponent = (props) => {
 
   const uploadButton = (
     <div>
-      {loading ? <LoadingOutlined /> : <PlusOutlined />}
+      {loading ? values.avatar === '' ? <LoadingOutlined /> : <img src={values.avatar} />  : <PlusOutlined />}
       <div style={{ marginTop: 8 }}>Upload</div>
     </div>
   );
@@ -42,18 +42,11 @@ const FormUseDetailComponent = (props) => {
     // if (!file.url && !file.preview) {
     //   file.preview = await getBase64(file.originFileObj);
     // }
+    console.log(values.avatar, 'values.avatar')
 
     setPreviewVisible(true);
   };
 
-  const PreviewImage = () => {
-    setPreviewVisible(true);
-    return (
-      <Modal visible={previewVisible} footer={null} onCancel={() => setPreviewVisible(false)}>
-        <img alt="example" style={{ width: '100%' }} src={values.image} />
-      </Modal>
-    )
-  }
 
   const handleClose = () => {
     setPreviewVisible(false);
@@ -101,21 +94,26 @@ const FormUseDetailComponent = (props) => {
           <Upload
             action="//jsonplaceholder.typicode.com/posts/"
             listType="picture-card"
-            fileList={values.avatar}
-            onPreview={values.avatar}
+            // fileList={values.avatar}
+            // defaultFileList={[values.avatar]}
+            onPreview={handlePreview}
             maxCount={1}
+            onRemove={() => {
+              setValues({ ...values, avatar: '' })
+              
+            }}
             beforeUpload={(file) => {
               setLoading(true);
               getBase64(file, (imageBase64) => {
                 console.log(imageBase64, 'file')
                 setLoading(false);
-                setValues({ ...values, avater: imageBase64 })
+                setValues({ ...values, avatar: imageBase64 })
               })
               return false;
             }}
             onChange={(info) => {
               // getBase64(info.file.originFileObj, imageUrl => {
-                
+
               console.log(info.file.originFileObj, 'info')
               // getBase64(info.file.originFileObj, imageUrl => {
               //   setValues({ ...values, avatar: imageUrl })
@@ -124,14 +122,11 @@ const FormUseDetailComponent = (props) => {
           >
             {values.avatar ? null : uploadButton}
           </Upload>
-          {/* <Modal visible={previewVisible} footer={null} onCancel={handleClose}> */}
-            {/* {values.avatar ? <PreviewImage /> : null} */}
-            {/* <img alt="example" style={{ width: '100%' }} src={values.avatar} /> */}
-          {/* </Modal> */}
+          <Modal visible={previewVisible} footer={null} onCancel={handleClose}>
+            {values.avatar ? <img alt="example" style={{ width: '100%' }} src={values.avatar} /> : null}
+          </Modal>
         </div>
-        {/* {uploadButton} */}
-        {/* {values.avatar ? <img src={values.avatar} alt="avatar" style={{ width: '100%' }} /> : uploadButton} */}
-    </Form.Item >
+      </Form.Item >
 
     </>
   )
