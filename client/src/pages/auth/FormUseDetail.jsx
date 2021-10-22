@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { Input, Form, DatePicker, Select, Upload, message, Modal } from 'antd'
-import { UserOutlined, LoadingOutlined, PlusOutlined } from '@ant-design/icons'
+import { Input, Form, DatePicker, Select, Upload, message, Modal, Space, InputNumber } from 'antd'
+import { UserOutlined, LoadingOutlined, PlusOutlined, PhoneOutlined } from '@ant-design/icons'
 import moment from 'moment'
+
+const { Option } = Select
 const FormUseDetailComponent = (props) => {
   const {
     step,
@@ -10,8 +12,38 @@ const FormUseDetailComponent = (props) => {
     stepStatus, setStepStatus
   } = props;
   const [previewVisible, setPreviewVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [close, setClose] = useState(false);
+  const [countryPhoneCode, setCountryPhoneCode] = useState({
+    data: [
+      {
+        "id": "1",
+        "name": "Viet Nam",
+        "country_code": "VN",
+        "phone_code": "84",
+        "country_flag": "https://cdn.countryflags.com/thumbs/vietnam/flag-400.png",
+      },
+      {
+        "id": "2",
+        "name": "United States",
+        "country_code": "US",
+        "phone_code": "1",
+        "country_flag": "https://cdn.countryflags.com/thumbs/united-states-of-america/flag-400.png",
+      },
+      {
+        "id": "3",
+        "name": "United Kingdom",
+        "country_code": "GB",
+        "phone_code": "44",
+        "country_flag": "https://cdn.countryflags.com/thumbs/united-kingdom/flag-400.png",
+      },
+      {
+        "id": "4",
+        "name": "Morocco",
+        "country_code": "MA",
+        "phone_code": "212",
+        "country_flag": "https://cdn.countryflags.com/thumbs/morocco/flag-400.png",
+      },
+    ],
+  });
 
 
   function disabledDate(current) {
@@ -23,38 +55,35 @@ const FormUseDetailComponent = (props) => {
     reader.addEventListener('load', () => callback(reader.result));
     reader.readAsDataURL(img);
   }
-
-
-  const handleChange = (e) => {
-    // const { name, value } = e.target;
-    // setValues({ ...values, [name]: value })
-    console.log(e.target)
-  }
-
   const uploadButton = (
     <div>
-      {loading ? values.avatar === '' ? <LoadingOutlined /> : <img src={values.avatar} />  : <PlusOutlined />}
+      {values.imageUrl ? <img src={values.imageUrl} alt="avatar" style={{ width: '100%' }} /> : <PlusOutlined />}
       <div style={{ marginTop: 8 }}>Upload</div>
     </div>
   );
 
-  const handlePreview = () => {
-    // if (!file.url && !file.preview) {
-    //   file.preview = await getBase64(file.originFileObj);
-    // }
-    console.log(values.avatar, 'values.avatar')
-
-    setPreviewVisible(true);
-  };
-
-
-  const handleClose = () => {
-    setPreviewVisible(false);
-  };
-
   useEffect(() => {
-    console.log(values.avatar, 'values.avatar')
-  }, [values.avatar])
+    console.log('[', values.imageUrl, ']values.imageUrl')
+  }, [values])
+
+  const selectCountry = (
+    <Select
+      showSearch
+      style={{ width: 90 }}
+      // onChange={(value) => {
+      //   setValues({ ...values, country: value })
+      // }}
+    >
+      {countryPhoneCode.data.map((item, index) => (
+        <Option key={index} value={item.phone_code}>
+          <img src={item.country_flag} alt="flag" style={{ width: '20px', marginRight: '5px' }} />
+          {item.country_code}
+        </Option>
+      ))}
+    </Select>
+  );
+
+
   return (
     <>
       <Form.Item
@@ -79,8 +108,8 @@ const FormUseDetailComponent = (props) => {
           name="gander"
           placeholder="Gander"
 
-          onChange={(value) => {
-            setValues({ ...values, gander: value })
+          onChange={async (value) => {
+            await setValues({ ...values, gander: value })
           }}
         >
           <Select.Option value="m">male</Select.Option>
@@ -92,41 +121,38 @@ const FormUseDetailComponent = (props) => {
       >
         <div className="clearfix">
           <Upload
-            action="//jsonplaceholder.typicode.com/posts/"
+            action=""
             listType="picture-card"
-            // fileList={values.avatar}
-            // defaultFileList={[values.avatar]}
-            onPreview={handlePreview}
+            defaultFileList={values.thumbUrl}
+            onPreview={() => { setPreviewVisible(true) }}
             maxCount={1}
-            onRemove={() => {
-              setValues({ ...values, avatar: '' })
-              
-            }}
-            beforeUpload={(file) => {
-              setLoading(true);
-              getBase64(file, (imageBase64) => {
-                console.log(imageBase64, 'file')
-                setLoading(false);
-                setValues({ ...values, avatar: imageBase64 })
-              })
-              return false;
-            }}
+            customRequest={({ e, onSuccess }) => { onSuccess('ok') }}
             onChange={(info) => {
-              // getBase64(info.file.originFileObj, imageUrl => {
-
-              console.log(info.file.originFileObj, 'info')
-              // getBase64(info.file.originFileObj, imageUrl => {
-              //   setValues({ ...values, avatar: imageUrl })
-              // });
+              if (info.file.status === 'removed') {
+                setValues({ ...values, avatar: '', thumbUrl: '' })
+              } else {
+                getBase64(info.file.originFileObj, (imageUrl) => {
+                  setValues({ ...values, avatar: imageUrl, thumbUrl: info.fileList })
+                });
+              }
             }}
           >
             {values.avatar ? null : uploadButton}
           </Upload>
-          <Modal visible={previewVisible} footer={null} onCancel={handleClose}>
+          <Modal visible={previewVisible} footer={null} onCancel={() => { setPreviewVisible(false) }}>
             {values.avatar ? <img alt="example" style={{ width: '100%' }} src={values.avatar} /> : null}
           </Modal>
         </div>
       </Form.Item >
+      <Form.Item
+        name="phoneNumber"
+      >
+        <Space direction="vertical">
+          <Input addonBefore={selectCountry} placeholder="Phone" value={values.country} />
+
+        </Space>
+
+      </Form.Item>
 
     </>
   )
@@ -134,60 +160,3 @@ const FormUseDetailComponent = (props) => {
 
 export default FormUseDetailComponent
 
-
-
-
-
-// import React, { Component } from 'react'
-// import { Upload, Modal } from 'antd';
-
-
-// export default class FormUseDetailComponent extends Component {
-//   state = {
-//     previewVisible: false,
-//     previewImage: '',
-//     fileList: [{
-//       uid: -1,
-//       name: 'xxx.png',
-//       status: 'done',
-//       url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-//     }],
-//   };
-
-//   handleCancel = () => this.setState({ previewVisible: false })
-
-//   handlePreview = (file) => {
-//     this.setState({
-//       previewImage: file.url || file.thumbUrl,
-//       previewVisible: true,
-//     });
-//   }
-
-//   handleChange = ({ fileList }) => this.setState({ fileList })
-
-//   render() {
-//     const { previewVisible, previewImage, fileList } = this.state;
-//     const uploadButton = (
-//       <div>
-//         {/* <Icon type="plus" /> */}
-//         <div className="ant-upload-text">Upload</div>
-//       </div>
-//     );
-//     return (
-//       <div className="clearfix">
-//         <Upload
-//           action="//jsonplaceholder.typicode.com/posts/"
-//           listType="picture-card"
-//           fileList={fileList}
-//           onPreview={this.handlePreview}
-//           onChange={this.handleChange}
-//         >
-//           {fileList.length >= 3 ? null : uploadButton}
-//         </Upload>
-//         <Modal visible={previewVisible} footer={null} onCancel={this.handleCancel}>
-//           <img alt="example" style={{ width: '100%' }} src={previewImage} />
-//         </Modal>
-//       </div>
-//     );
-//   }
-// }

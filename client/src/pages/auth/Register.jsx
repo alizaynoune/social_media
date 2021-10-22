@@ -33,10 +33,9 @@ const { Option } = Select;
 
 function RegisterPage(props) {
   const [step, setStep] = useState(0);
-  // wait process finish error
   const [stepStatus, setStepStatus] = useState({
     0: "process",
-    1: "process",
+    1: "finish",
     2: "process",
     3: "process",
   });
@@ -53,6 +52,7 @@ function RegisterPage(props) {
     coutry: "",
     city: "",
     avater: "",
+    thumbUrl: "",
   });
 
   const [isValid, setIsValid] = useState({

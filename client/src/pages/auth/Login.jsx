@@ -100,18 +100,14 @@ function LoginPage(props) {
   useEffect(() => {
     if (props.error) {
       let resError = props.error;
-      // console.log(props.error, "error");
       setIsLoading(false);
       setIsValid(false);
-      message.error(resError.message);
-      // if (!p.errors) setMessageError(props.error.message);
-      // else {
+      message.error(resError.message, 2);
         const error = { ...errors };
         resError?.errors?.forEach((element) => {
           error[element.param] = element.msg;
         });
         setErrors(error);
-      // }
     }
   }, [props.error]);
 

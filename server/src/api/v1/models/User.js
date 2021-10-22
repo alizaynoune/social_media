@@ -43,7 +43,6 @@ const UserSchema = mongoose.Schema({
     phoneNumber: {
         type: Number,
         trim: true,
-        // index: true,
         default: null,
     },
     role: {

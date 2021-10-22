@@ -96,7 +96,6 @@ const FormUserInfoComponent = (props) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setValues({ ...values, [name]: value });
-    // setStepStatus({ ...stepStatus, [step]: "finish" });
     validate(name, value);
   }
 
