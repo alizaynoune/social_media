@@ -18,10 +18,10 @@ export const userValidator = {
         body('lastName').notEmpty().withMessage(ERROR_CODE.LAST_NAME_REQUIRED)
             .trim().escape().matches(/^[a-zA-Z]{3,}$/).withMessage(ERROR_CODE.LAST_NAME_INVALID),
         body('phoneNumber').optional().trim().matches(/^[+]{0,1}[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]{9,10}$/).withMessage(ERROR_CODE.PHONE_NUMBER_INVALID),
-        body('gander').notEmpty().withMessage(ERROR_CODE.GANDER_REQUIRED).trim().matches(/^[m|f]{1}$/).withMessage(ERROR_CODE.GANDER_INVALID),
-        body('birthday').notEmpty().withMessage(ERROR_CODE.BIRTHDAY_REQUIRED).trim()
+        body('gander').optional().notEmpty().withMessage(ERROR_CODE.GANDER_REQUIRED).trim().matches(/^[m|f]{1}$/).withMessage(ERROR_CODE.GANDER_INVALID),
+        body('birthday').optional().notEmpty().withMessage(ERROR_CODE.BIRTHDAY_REQUIRED).trim()
             .isDate().withMessage(ERROR_CODE.BIRTHDAY_INVALID),
-        body('role').notEmpty().withMessage(ERROR_CODE.ROLE_REQUIRED).trim()
+        body('role').optional().notEmpty().withMessage(ERROR_CODE.ROLE_REQUIRED).trim()
             .isIn(['user', 'admin', 'superadmin']).withMessage(ERROR_CODE.ROLE_INVALID),
 
     ],

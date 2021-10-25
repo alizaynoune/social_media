@@ -2,15 +2,15 @@ import { SUCCESS, IS_LOADING, FAILURE, AUTH_FAIL, AUTH_SUCCESS, AUTH_USER } from
 import { apiLongin, apiRegister, apiforgotPassword } from '../api';
 
 export const singIn = (request) => {
-    console.log(request);
+    // console.log(request);
     return async (dispatch) => {
         dispatch({ type: IS_LOADING })
         try {
             const res = await apiLongin(request)
-            console.log(res.data, 'res data');
+            // console.log(res.data, 'res data');
             dispatch(success(res.data, AUTH_SUCCESS))
         } catch (error) {
-            console.log(error?.response?.data || error);
+            // console.log(error?.response?.data || error);
             dispatch(fail(error?.response?.data || error, AUTH_FAIL))
         }
     }
@@ -21,25 +21,25 @@ export const register = (request) => {
         dispatch({ type: IS_LOADING })
         try {
             const res = await apiRegister(request)
-            console.log(res.data, 'res data');
+            // console.log(res.data, 'res data');
             dispatch(success(res.data, SUCCESS))
         } catch (error) {
-            console.log(error?.response?.data || error);
+            // console.log(error?.response?.data || error);
             dispatch(fail(error?.response?.data || error, FAILURE))
         }
     }
 }
 
 export const forgotPassword = (request) => {
-    console.log(request, 'test');
+    // console.log(request, 'test');
     return async (dispatch) => {
         dispatch({ type: IS_LOADING })
         try {
             const res = await apiforgotPassword(request)
-            console.log(res.data, 'res data');
+            // console.log(res.data, 'res data');
             dispatch(success(res.data, SUCCESS))
         } catch (error) {
-            console.log(error?.response?.data || error, 'auth error');
+            // console.log(error?.response?.data || error, 'auth error');
             dispatch(fail(error?.response?.data || error, FAILURE))
         }
     }
@@ -66,7 +66,7 @@ export const isAuth = () => {
                 dispatch(fail({ error: 'no token' }))
             }
         } catch (error) {
-            console.log(error?.response?.data || error);
+            // console.log(error?.response?.data || error);
 
         }
     }
@@ -81,7 +81,7 @@ const success = (data, type) => {
 }
 
 const fail = (data, type) => {
-    console.log(data, 'data');
+    // console.log(data, 'data');
     return {
         type: type,
         payload: data

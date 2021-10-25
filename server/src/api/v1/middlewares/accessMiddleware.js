@@ -16,7 +16,7 @@ export const grandAccess = (action, resource) => {
 }
 
 export const registered = (req, res, next) => {
-    const permission = roles.can(req.body.role)['createOwn']('profile');
+    const permission = roles.can(req.body.role || 'user')['createOwn']('profile');
     res.locals.userPermission = permission;
     if (permission.granted) {
         req.body = permission.filter(req.body);

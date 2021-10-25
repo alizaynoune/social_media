@@ -10,6 +10,7 @@ const UserSchema = mongoose.Schema({
         min: 3,
         required: [true, 'First name is required, Please provide it'],
         trim: true,
+        // unique: true,
     },
     lastName: {
         type: String,
@@ -32,12 +33,13 @@ const UserSchema = mongoose.Schema({
         type: String,
         enum: ['m', 'f', null],
         default: null,
-        required: [true, 'Grander is required, Please provide it'],
+        // required: [true, 'Grander is required, Please provide it'],
     },
     birthday: {
         type: Date,
         trim: true,
-        required: [true, 'Date of birth is required, Please provide it'],
+        default: null,
+        // required: [true, 'Date of birth is required, Please provide it'],
         index: true,
     },
     phoneNumber: {
